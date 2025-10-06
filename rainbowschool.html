@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rainbow School — Payment Portal</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- jsPDF for PDF invoice generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Razorpay checkout (test/demo) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    :root{
+      --primary: #5B8DEF;
+      --accent: #FF8A65;
+      --muted: #64748b;
+      --bg: #f3f6fb;
+      --card:#ffffff;
+      --radius:12px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#0f172a;line-height:1.4}
+    .topbar{background:linear-gradient(90deg,#eef6ff,#fef8f2);padding:10px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #e6eefb}
+    .contact{display:flex;gap:14px;align-items:center;font-size:14px;color:var(--muted)}
+    .social{display:flex;gap:10px;align-items:center}
+    .social a{padding:6px 10px;border-radius:8px;text-decoration:none;border:1px solid transparent;font-weight:600}
+    .social a:hover{background:#fff;border-color:#e6eefb;box-shadow:0 6px 18px rgba(22,34,79,0.03)}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo .mark{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#8cc4ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px}
+    nav{background:var(--card);padding:12px 18px;border-bottom:1px solid #eef6ff;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+    .navlinks a{margin-right:12px;text-decoration:none;color:#0f172a;font-weight:600}
+    .container{max-width:1100px;margin:18px auto;padding:0 16px}
+    .hero{display:flex;gap:18px;align-items:flex-start}
+    .left{flex:1}
+    .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 6px 30px rgba(14, 30, 80, 0.04)}
+    .school-title{display:flex;align-items:center;gap:12px}
+    h1{margin:0;font-size:26px}
+    .muted{color:var(--muted)}
+    .two-col{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:16px}
+    .section{margin-top:12px}
+    /* Payment card */
+    .payment-methods{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .pm{padding:10px 12px;border-radius:10px;border:1px solid #e6eefb;cursor:pointer;font-weight:700}
+    .pm.active{background:linear-gradient(90deg,rgba(91,141,239,0.12),rgba(255,138,101,0.06));border-color:var(--primary);}
+    .form-row{display:flex;gap:10px;flex-wrap:wrap}
+    .form-row .field{flex:1;min-width:140px}
+    input[type="text"], input[type="number"], input[type="date"], select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb;background:white}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted);font-weight:600}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-ghost{background:transparent;border:1px solid #e6eefb}
+    .small{font-size:13px;color:var(--muted)}
+    .qr-box{border:1px dashed #e6eefb;border-radius:8px;padding:12px;text-align:center}
+    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .invoice-ready{margin-top:12px;padding:12px;border-radius:10px;background:#f8fff8;border:1px solid #e6f8ed;color:#0b7130;font-weight:700}
+    footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:13px}
+    @media (max-width:980px){
+      .two-col{grid-template-columns:1fr}
+      .hero{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="mark">R</div>
+      <div>
+        <div style="font-weight:800">Rainbow School</div>
+        <div class="small muted">Healthy school...... Healthy kids......</div>
+      </div>
+    </div>
+
+    <div class="contact">
+      <div>Get direction</div>
+      <div>📞 +91 94907 16961</div>
+      <div class="social">
+        <a href="#" title="Facebook">Facebook</a>
+        <a href="#" title="Instagram">Instagram</a>
+        <a href="#" title="School Videos">School Videos</a>
+      </div>
+      <div style="margin-left:14px">Call for any Support: <strong>+91 9492400555</strong></div>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="hero">
+      <div class="left">
+        <div class="card">
+          <div class="school-title">
+            <div>
+              <h1>About the School</h1>
+              <div class="small muted">Rainbow School is a recognized landmark in its pursuit of excellence in education, holistic growth of children and human excellence.</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Rainbow's Belief</h3>
+            <p>"FROM TINY SEEDS GROW MIGHTY TREES" — Within these children, we plant tiny seeds each day and help them grow into confident learners.</p>
+            <a href="#" class="small">Read More +</a>
+          </div>
+
+          <div class="section">
+            <h3>Vision & Mission</h3>
+            <p class="small muted">Our Vision: An institution of global repute for excellence in educating the next generation for a bright future.</p>
+            <a href="#" class="small">Read More +</a>
+          </div>
+
+          <div class="section">
+            <h3>Leadership & Philosophy</h3>
+            <p class="small muted">The school encourages holistic growth by integrating sports, hobby activities, community service and eco-friendly initiatives within the curriculum.</p>
+            <a href="#" class="small">Read More +</a>
+          </div>
+
+          <div class="section">
+            <h3>Parent's Speak</h3>
+            <blockquote>"We want our students to be risk-takers and to try new things in life."</blockquote>
+          </div>
+
+          <div class="section">
+            <h3>Address</h3>
+            <p class="small muted">
+              Venkatagiri, S.P.S.R Nellore District,<br/>
+              Andhra Pradesh - PIN 524132.<br/>
+              Email: <a href="mailto:mail@rainbowschoolnellore.com">mail@rainbowschoolvenkatagiri.com</a><br/>
+              Phones: +91 9492400555, +91 9490716961
+            </p>
+            <div style="margin-top:12px;text-align:center">
+              <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1000&q=60" alt="School" style="width:100%;max-width:640px;border-radius:10px;box-shadow:0 8px 24px rgba(14,30,80,0.08)"/>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PAYMENT / RIGHT COLUMN -->
+      <aside style="width:420px">
+        <div class="card">
+          <h2 style="margin:0 0 8px 0">Fee Payment</h2>
+          <div class="small muted">Choose method and complete payment. After success you can download invoice.</div>
+
+          <!-- editable form -->
+          <div style="margin-top:12px">
+            <label>Receipt No.</label>
+            <input id="receiptNo" type="text" value="" readonly />
+
+            <div class="form-row" style="margin-top:10px">
+              <div class="field">
+                <label>Payment Date</label>
+                <input id="payDate" type="date" value="" />
+              </div>
+              <div class="field">
+                <label>Amount (INR)</label>
+                <input id="amount" type="number" min="0" step="0.01" value="" placeholder="Enter amount (INR)" />
+              </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <label>Student Name</label>
+              <input id="studentName" type="text" value="" placeholder="Enter student name" />
+            </div>
+
+            <div style="margin-top:8px">
+              <label>Class</label>
+              <div style="display:flex;gap:8px">
+                <select id="classSelect" aria-label="Class">
+                  <option value="">Select class</option>
+                  <option value="Class 1">Class 1</option>
+                  <option value="Class 2">Class 2</option>
+                  <option value="Class 3">Class 3</option>
+                  <option value="Class 4">Class 4</option>
+                  <option value="Class 5">Class 5</option>
+                  <option value="Class 6">Class 6</option>
+                  <option value="Class 7">Class 7</option>
+                </select>
+
+                <select id="sectionSelect" aria-label="Section">
+                  <option value="">Section</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <label>Parent / Payer</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input 
+                  type="text" 
+                  id="payerInput" 
+                  placeholder="Enter payer name" 
+                  style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb;background:white"
+                />
+              </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <label>Payment Method</label>
+              <div class="payment-methods" id="methods">
+                <div class="pm active" data-method="razorpay">Razorpay</div>
+                <div class="pm" data-method="upi">UPI</div>
+                <div class="pm" data-method="cash">Cash</div>
+              </div>
+              <div id="methodHint" class="small muted" style="margin-top:8px">Razorpay (recommended) — will open secure checkout in test mode.</div>
+            </div>
+
+            <!-- UPI / QR holder -->
+            <div id="upiBox" style="display:none;margin-top:10px">
+              <div class="qr-box">
+                <div style="font-weight:700;margin-bottom:8px">UPI Payment</div>
+                <div class="small muted">UPI ID: <strong>rainbowschool@upi</strong></div>
+                <div class="small muted">Use your UPI app or scan QR to pay.</div>
+                <div style="margin-top:8px"><button class="btn btn-ghost" id="simulateUpiBtn">Simulate UPI Paid</button></div>
+              </div>
+            </div>
+
+            <!-- Cash -->
+            <div id="cashBox" style="display:none;margin-top:10px">
+              <div class="qr-box">
+                <div style="font-weight:700;margin-bottom:8px">Cash Payment</div>
+                <div class="small muted">Collect cash at school office or mark as paid below.</div>
+                <div style="margin-top:8px"><button class="btn btn-ghost" id="markCashBtn">Mark as Paid (Cash)</button></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-ghost" id="resetBtn">Reset</button>
+              <button class="btn btn-primary" id="payBtn">Pay Now</button>
+            </div>
+
+            <div id="result" style="margin-top:12px"></div>
+            <div id="invoiceActions" style="display:none;margin-top:12px">
+              <div class="invoice-ready">Payment succeeded — Invoice ready</div>
+              <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+                <button class="btn btn-ghost" id="viewInvoiceBtn">View Invoice (Print)</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Mandatory Public Disclosure</h3>
+          <p class="small muted">View e Brochure • School Song • Public Disclosure</p>
+          <a href="#" class="small">View e Brochure</a>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      All rights reserved @ 2020 - Legal Notice - Privacy & Cookie Policy • Developed by VisionExt
+    </footer>
+  </main>
+
+<script>
+  // ---------------------------
+  // Utility & initialization
+  // ---------------------------
+  (function(){
+    // set today's date by default
+    const dateEl = document.getElementById('payDate');
+    if(!dateEl.value){
+      const today = new Date().toISOString().slice(0,10);
+      dateEl.value = today;
+    }
+
+    // generate random receipt on open
+    populateRandomReceipt();
+
+    // clear fields per your request
+    document.getElementById('amount').value = '';
+    document.getElementById('studentName').value = '';
+
+    // ensure class/section/selects are cleared
+    document.getElementById('classSelect').value = '';
+    document.getElementById('sectionSelect').value = '';
+    document.getElementById('payerInput').value = '';
+  })();
+
+  function populateRandomReceipt(){
+    // Format: SR-YYYY-6digit
+    const now = new Date();
+    const year = now.getFullYear();
+    const random = Math.floor(100000 + Math.random()*900000);
+    document.getElementById('receiptNo').value = `SR-${year}-${random}`;
+  }
+
+  // Payment method selection
+  const methodsWrap = document.getElementById('methods');
+  const methodEls = methodsWrap.querySelectorAll('.pm');
+  let selectedMethod = 'razorpay';
+  methodEls.forEach(el=>{
+    el.addEventListener('click', ()=>{
+      methodEls.forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      selectedMethod = el.dataset.method;
+      updateMethodUI();
+    });
+  });
+
+  function updateMethodUI(){
+    document.getElementById('upiBox').style.display = selectedMethod === 'upi' ? 'block' : 'none';
+    document.getElementById('cashBox').style.display = selectedMethod === 'cash' ? 'block' : 'none';
+    const hint = document.getElementById('methodHint');
+    if(selectedMethod === 'razorpay') hint.textContent = 'Razorpay (recommended) — will open secure checkout in test mode.';
+    if(selectedMethod === 'upi') hint.textContent = 'Pay using your UPI app to the provided UPI ID. Then click "Simulate UPI Paid".';
+    if(selectedMethod === 'cash') hint.textContent = 'Mark cash paid at the office or use "Mark as Paid".';
+  }
+  updateMethodUI();
+
+  // reset
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    populateRandomReceipt();
+    document.getElementById('amount').value = '';
+    document.getElementById('studentName').value = '';
+    document.getElementById('classSelect').value = '';
+    document.getElementById('sectionSelect').value = '';
+    document.getElementById('payerInput').value = '';
+    document.getElementById('payDate').value = new Date().toISOString().slice(0,10);
+    selectedMethod = 'razorpay';
+    methodEls.forEach(x=>x.classList.remove('active'));
+    methodEls[0].classList.add('active');
+    updateMethodUI();
+    hideResult();
+  });
+
+  // ---------------------------
+  // Payment flows
+  // ---------------------------
+  const payBtn = document.getElementById('payBtn');
+  payBtn.addEventListener('click', handlePay);
+
+  // Simulate UPI paid button
+  document.getElementById('simulateUpiBtn').addEventListener('click', ()=>{
+    onPaymentSuccess({
+      method: 'UPI',
+      payment_id: 'UPI-' + Date.now(),
+      order_id: 'ORDER-' + Date.now()
+    });
+  });
+
+  // Mark cash paid
+  document.getElementById('markCashBtn').addEventListener('click', ()=>{
+    onPaymentSuccess({
+      method: 'Cash',
+      payment_id: 'CASH-' + Date.now(),
+      order_id: 'ORDER-' + Date.now()
+    });
+  });
+
+  function handlePay(){
+    const amountVal = document.getElementById('amount').value;
+    const amount = Number(amountVal);
+    if(!amountVal || isNaN(amount) || amount <= 0){
+      alert('Enter a valid amount');
+      return;
+    }
+
+    if(selectedMethod === 'razorpay'){
+      startRazorpay(amount);
+    } else if(selectedMethod === 'upi'){
+      document.getElementById('upiBox').scrollIntoView({behavior:'smooth'});
+      alert('UPI selected. Please use your UPI app to pay to the UPI ID shown, then click "Simulate UPI Paid". For demo, clicking simulate will mark as paid.');
+    } else if(selectedMethod === 'cash'){
+      document.getElementById('cashBox').scrollIntoView({behavior:'smooth'});
+      alert('Cash selected. Visit school office or click "Mark as Paid (Cash)".');
+    }
+  }
+
+  // ---------------------------
+  // Razorpay (Test/demo)
+  // ---------------------------
+  function startRazorpay(amountINR){
+    const amountPaise = Math.round(amountINR * 100);
+    const options = {
+      key: "rzp_test_1DP5mmOlF5G5ag", // demo/test key
+      amount: amountPaise,
+      currency: "INR",
+      name: "Rainbow School",
+      description: "Fee Payment",
+      prefill: {
+        name: getPayerValue() || '',
+        email: '',
+        contact: ''
+      },
+      handler: function (response){
+        onPaymentSuccess({
+          method: 'Razorpay',
+          payment_id: response.razorpay_payment_id || ('RPAY-' + Date.now()),
+          order_id: response.razorpay_order_id || ('ORDER-' + Date.now()),
+          raw: response
+        });
+      },
+      modal: {
+        ondismiss: function() {
+          showResult('Payment cancelled or dismissed');
+        }
+      },
+      theme: { color: "#5B8DEF" }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+
+  // ---------------------------
+  // After payment success
+  // ---------------------------
+  function onPaymentSuccess(data){
+    const receiptNo = document.getElementById('receiptNo').value || ('SR-' + Date.now());
+    const payDate = document.getElementById('payDate').value || new Date().toISOString().slice(0,10);
+    const studentName = document.getElementById('studentName').value || '';
+    const studentClass = document.getElementById('classSelect').value || '';
+    const section = document.getElementById('sectionSelect').value ? ('Section ' + document.getElementById('sectionSelect').value) : '';
+    const parentName = getPayerValue();
+    const amount = Number(document.getElementById('amount').value) || 0;
+
+    const txn = {
+      receiptNo,
+      payDate,
+      studentName,
+      studentClass: (studentClass ? studentClass : '') + (section ? ' • ' + section : ''),
+      parentName,
+      amount,
+      method: data.method || selectedMethod,
+      paymentId: data.payment_id || ('PAY-' + Date.now()),
+      orderId: data.order_id || ('ORD-' + Date.now())
+    };
+
+    window.__LAST_TXN = txn;
+    showResult('Payment successful: ' + txn.method + ' • Transaction ID: ' + txn.paymentId, true);
+  }
+
+  // helper to read payer input
+  function getPayerValue(){
+    return (document.getElementById('payerInput').value || '').trim();
+  }
+
+  function showResult(msg, success){
+    const r = document.getElementById('result');
+    r.innerHTML = '<div style="padding:10px;border-radius:8px;background:' + (success ? '#f0fff4' : '#fff6f6') + ';border:1px solid ' + (success ? '#e6f8ed' : '#f4d7d7') + ';color:' + (success ? '#0b7130' : '#7a1f1f') + '">' + msg + '</div>';
+    if(success){
+      document.getElementById('invoiceActions').style.display = 'block';
+    } else {
+      document.getElementById('invoiceActions').style.display = 'none';
+    }
+  }
+
+  function hideResult(){
+    document.getElementById('result').innerHTML = '';
+    document.getElementById('invoiceActions').style.display = 'none';
+    window.__LAST_TXN = null;
+  }
+
+  // ---------------------------
+  // View / Download Invoice
+  // ---------------------------
+  document.getElementById('viewInvoiceBtn').addEventListener('click', ()=>{
+    const txn = window.__LAST_TXN;
+    if(!txn){ alert('No invoice available. Complete a payment first.'); return; }
+    openInvoicePrint(txn);
+  });
+
+  document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
+    const txn = window.__LAST_TXN;
+    if(!txn){ alert('No invoice available. Complete a payment first.'); return; }
+    await downloadInvoicePdf(txn);
+  });
+
+  // Print view: open printable window
+  function openInvoicePrint(txn){
+    const html = generateInvoiceHtml(txn);
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>{ w.print(); }, 600);
+  }
+
+  // Generate invoice HTML
+  function generateInvoiceHtml(txn){
+    const total = Number(txn.amount).toFixed(2);
+    const date = txn.payDate;
+    return `
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Rainbow School Invoice ${txn.receiptNo}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+          body{font-family: 'Poppins', sans-serif;margin:0;padding:30px;background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;filter:brightness(0.9);}
+          .overlay{background:rgba(255,255,255,0.92);max-width:780px;margin:auto;border-radius:14px;padding:30px 40px;box-shadow:0 8px 28px rgba(0,0,0,0.25);backdrop-filter:blur(8px);}
+          .header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e0f2fe;padding-bottom:15px;}
+          .logo{font-size:28px;font-weight:700;background:linear-gradient(90deg,#0066ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:1px 1px 2px rgba(0,0,0,0.1);}
+          .school-tag{font-size:14px;color:#4b5563;margin-top:2px;}
+          .receipt-info{text-align:right;color:#1e293b;}
+          .receipt-info div{font-size:14px;}
+          .receipt-info .num{font-weight:600;color:#0ea5e9;font-size:16px;}
+          .title{text-align:center;color:#0066ff;font-size:24px;font-weight:700;margin-top:20px;text-transform:uppercase;}
+          table{width:100%;border-collapse:collapse;margin-top:12px;font-size:15px;}
+          th,td{padding:12px 8px;border-bottom:1px solid #e2e8f0;}
+          th{text-align:left;width:40%;color:#0284c7;font-weight:600;}
+          .total{background:#ecfdf5;color:#047857;font-weight:700;border-radius:8px;}
+          .footer-note{text-align:center;margin-top:20px;color:#475569;font-size:13px;line-height:1.5;}
+          .brand-bar{margin-top:24px;text-align:center;padding:8px;background:linear-gradient(90deg,#007bff,#00c6ff);border-radius:0 0 12px 12px;color:white;font-size:13px;letter-spacing:0.5px;}
+        </style>
+      </head>
+      <body>
+        <div class="overlay">
+          <div class="header">
+            <div>
+              <div class="logo">🌈 Rainbow School</div>
+              <div class="school-tag">Venkatagiri, Andhra Pradesh</div>
+            </div>
+            <div class="receipt-info">
+              <div>Receipt No.:</div>
+              <div class="num">${txn.receiptNo}</div>
+              <div style="margin-top:6px;">Date:</div>
+              <div>${date}</div>
+            </div>
+          </div>
+          <div class="title">Payment Receipt</div>
+          <div class="subtext">Rainbow School — Fee Payment Confirmation</div>
+          <table>
+            <tr><th>Student</th><td>${escapeHtml(txn.studentName)} ${txn.studentClass ? '('+escapeHtml(txn.studentClass)+')' : ''}</td></tr>
+            <tr><th>Payer</th><td>${escapeHtml(txn.parentName)}</td></tr>
+            <tr><th>Payment Method</th><td>${escapeHtml(txn.method)}</td></tr>
+            <tr><th>Transaction ID</th><td>${escapeHtml(txn.paymentId)}</td></tr>
+            <tr><th>Order ID</th><td>${escapeHtml(txn.orderId)}</td></tr>
+            <tr><th class="total">Total Paid (INR)</th><td class="total">₹ ${Number(txn.amount).toLocaleString('en-IN', {minimumFractionDigits:2})}</td></tr>
+          </table>
+          <p class="footer-note">This is a computer generated receipt and does not require a signature.<br>Keep this document for your records.</p>
+          <div class="brand-bar">Thank you for your payment 💙 | Rainbow School Digital Invoice</div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Download PDF using jsPDF
+  async function downloadInvoicePdf(txn){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt', format:'a4'});
+    const left = 40;
+    let y = 40;
+    doc.setFontSize(18);
+    doc.setFont('helvetica','bold');
+    doc.text('Rainbow School', left, y);
+    y += 20;
+    doc.setFontSize(11);
+    doc.setFont('helvetica','normal');
+    doc.text('Venkatagiri', left, y);
+    y += 24;
+    doc.setFontSize(12);
+    doc.setFont('helvetica','bold');
+    doc.text('Payment Receipt', left, y);
+    doc.setFontSize(10);
+    y += 18;
+
+    function addLine(label, value){
+      doc.setFont('helvetica','bold'); doc.text(label, left, y);
+      doc.setFont('helvetica','normal'); doc.text(String(value), left + 160, y);
+      y += 16;
+    }
+
+    addLine('Receipt No.:', txn.receiptNo);
+    addLine('Date:', txn.payDate);
+    addLine('Student:', txn.studentName + (txn.studentClass ? ' (' + txn.studentClass + ')' : ''));
+    addLine('Payer:', txn.parentName);
+    addLine('Method:', txn.method);
+    addLine('Transaction ID:', txn.paymentId);
+    addLine('Order ID:', txn.orderId);
+    y += 6;
+    doc.setFont('helvetica','bold');
+    doc.text('Total Paid (INR):', left, y);
+    doc.text('₹ ' + Number(txn.amount).toLocaleString('en-IN', {minimumFractionDigits:2}), left + 160, y);
+    y += 32;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica','normal');
+    doc.text('This is a computer generated receipt and does not require a signature.', left, y);
+
+    const filename = `Invoice_${txn.receiptNo || Date.now()}.pdf`;
+    doc.save(filename);
+  }
+
+  // Simple escape
+  function escapeHtml(s){
+    if(!s) return '';
+    return String(s).replace(/[&<>"']/g, function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m];
+    });
+  }
+
+  function showMessage(msg){
+    alert(msg);
+  }
+
+  // Hide invoiceActions initially
+  hideResult();
+</script>
+
+</body>
+</html>
