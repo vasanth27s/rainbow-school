@@ -58,11 +58,47 @@
     .mark{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:20px;background:linear-gradient(135deg,var(--primary),#00b4ff);box-shadow:0 6px 18px rgba(9,33,91,0.08)}
     .brand h1{margin:0;font-size:18px}
     .brand p{margin:0;font-size:12px;color:var(--muted);font-weight:600}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
 
-    .top-actions{display:flex;align-items:center;gap:12px}
-    .top-actions .phone{font-weight:700;color:#08306b}
-    .top-actions .contact{font-size:13px;color:var(--muted)}
-    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg,rgba(91,141,239,0.08),rgba(255,138,101,0.04));border:1px solid rgba(11,88,229,0.06);font-weight:700}
+.top-actions .phone {
+  font-weight: 600;
+  color: #08306b;
+  font-size: 13px;
+}
+
+.top-actions .contact {
+  font-size: 12px;
+  color: #555;
+  font-weight: 500;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(91,141,239,0.05);
+  border: 1px solid rgba(11,88,229,0.08);
+  font-weight: 600;
+  font-size: 12px;
+  color: #08306b;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Force same appearance across all devices */
+* {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
 
     /* receipt badge added */
     .receipt-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg,rgba(15,98,254,0.08),rgba(91,141,239,0.03));border:1px solid rgba(11,88,229,0.06);font-weight:800;color:var(--primary);font-size:13px}
@@ -171,10 +207,7 @@
         <div class="phone" aria-label="Support phone">+91 94924 00555</div>
         <div class="contact muted-2">Mon–Fri 9:00–17:30</div>
         <!-- Visible receipt badge (keeps in sync with the hidden/readonly input) -->
-        <div id="receiptBadge" class="receipt-badge" role="status" aria-live="polite">
-          <span id="receiptBadgeText">SR-000000-000</span>
-          <small>Receipt</small>
-        </div>
+        
       </div>
     </div>
 
@@ -362,7 +395,7 @@
     </div>
 
     <footer>
-      All rights reserved © 2020–2025 • Legal Notice • Privacy & Cookie Policy • Developed by VisionExt
+      All rights reserved © 2025 • Legal Notice • Privacy & Cookie Policy • Developed by VisionExt
     </footer>
   </div>
 
